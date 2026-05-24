@@ -130,3 +130,27 @@ Phân vùng Flash được tùy chỉnh (partitions.csv): ~3 MB cho firmware, ~1
 | **Backlight timeout** | Tắt đèn màn hình sau N giây không hoạt động (cấu hình: 5s–120s). Chạm màn hình hoặc quẹt thẻ → bật lại ngay lập tức. |
 | **Light sleep** | Sau 5 phút không hoạt động, ESP32 vào light sleep 30 giây rồi tỉnh kiểm tra, lặp lại → giảm tiêu thụ điện ~75% so với luôn hoạt động. |
 | **Wake-up khẩn cấp** | Nếu cảm biến cửa kích hoạt trong khi đang ngủ (EXT1 wakeup) → tỉnh ngay, bật backlight, chuyển STATE_ALARM, không chờ người dùng tương tác. |
+
+---
+
+## 2.10 Quản lý đa người dùng (Multi-User)
+
+Hệ thống hỗ trợ tối đa **20 người dùng** đồng thời, mỗi user được lưu trữ độc lập với đầy đủ thông tin:
+
+| Trường | Kiểu | Mô tả |
+|--------|------|-------|
+| `id` | string | Định danh duy nhất (tự sinh, ví dụ `U001`) |
+| `name` | string | Tên hiển thị |
+| `role` | enum | `Admin` / `User` / `Guest` |
+| `password` | string | Mật khẩu PIN riêng của user |
+| `cardId` | string | UID thẻ RFID được gắn (nếu có) |
+| `active` | bool | Kích hoạt / vô hiệu hóa tài khoản |
+| `allowedStart` / `allowedEnd` | string | Khung giờ được phép (`HH:MM`) |
+
+**Xác thực đa user:** Khi nhập PIN, hệ thống duyệt qua toàn bộ danh sách user và kiểm tra PIN của từng người. User nào khớp (và trong khung giờ, và `active = true`) thì mở cửa — log ghi đúng tên người đó.
+
+**Quản lý từ 2 nơi:**
+- **Web UI**: thêm, sửa, xóa user, gắn/xóa thẻ, thay đổi role và khung giờ.
+- **TFT**: thêm user mới (tự đặt tên `User N`), xóa user, gắn/xóa thẻ — cho phép admin thao tác tại chỗ mà không cần smartphone.
+
+**Log truy cập theo user:** Mỗi lần xác thực thành công hoặc thất bại đều được ghi vào `AccessLog` kèm tên user, phương thức (PIN/Card/OTP), thời gian — xem lại được trên web UI.
