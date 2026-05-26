@@ -1,4 +1,4 @@
-# Chương II: Tính năng hệ thống
+# Tổng quan các tính năng hệ thống
 
 ---
 
